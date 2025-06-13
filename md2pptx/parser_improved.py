@@ -1,4 +1,8 @@
-from __future__ import annotations
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Улучшенная версия парсера Markdown с очисткой метаинформации
+"""
 
 import re
 from typing import List
@@ -12,7 +16,6 @@ from pathlib import Path
 from .models import SlideModel, TextBlock, ImageBlock
 
 SEPARATOR = re.compile(r"^---$", re.MULTILINE)
-
 
 def clean_title(title: str) -> str:
     """Очищает заголовок от метаинформации"""
@@ -153,3 +156,54 @@ def parse_markdown(text: str) -> List[SlideModel]:
         slides.append(slide)
     
     return slides
+
+def test_parser():
+    """Тестирует улучшенный парсер"""
+    
+    from .fetcher import fetch_markdown
+    
+    print("🧪 ТЕСТИРОВАНИЕ УЛУЧШЕННОГО ПАРСЕРА")
+    print("=" * 50)
+    
+    try:
+        gist_url = "https://gist.github.com/GunS82/21462de6ea445f8ec4a78130eb71ed0a"
+        content = fetch_markdown(gist_url)
+        
+        print(f"📄 Загружено {len(content)} символов")
+        
+        slides = parse_markdown(content)
+        
+        print(f"📋 Создано слайдов: {len(slides)}")
+        print()
+        
+        for i, slide in enumerate(slides[:5], 1):
+            print(f"📄 СЛАЙД {i}:")
+            print(f"   📝 Заголовок: '{slide.title}'")
+            print(f"   📊 Блоков: {len(slide.blocks)}")
+            
+            for j, block in enumerate(slide.blocks[:2]):
+                if isinstance(block, TextBlock):
+                    if block.bullets:
+                        print(f"   • Список из {len(block.bullets)} пунктов")
+                        for bullet in block.bullets[:2]:
+                            print(f"     - {bullet[:50]}{'...' if len(bullet) > 50 else ''}")
+                    else:
+                        print(f"   • Текст: {block.text[:50]}{'...' if len(block.text) > 50 else ''}")
+                elif isinstance(block, ImageBlock):
+                    print(f"   • Изображение: {block.alt or 'без описания'}")
+            
+            if len(slide.blocks) > 2:
+                print(f"   ... и ещё {len(slide.blocks) - 2} блоков")
+            
+            print()
+        
+        if len(slides) > 5:
+            print(f"... и ещё {len(slides) - 5} слайдов")
+        
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    test_parser()
