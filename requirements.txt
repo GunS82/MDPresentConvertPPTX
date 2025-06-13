@@ -1,0 +1,6 @@
+python-pptx
+markdown
+beautifulsoup4
+pydantic
+requests
+python-dotenv
