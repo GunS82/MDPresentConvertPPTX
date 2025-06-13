@@ -5,6 +5,9 @@ from typing import List
 
 from bs4 import BeautifulSoup
 import markdown
+import requests
+from tempfile import NamedTemporaryFile
+from pathlib import Path
 
 from .models import SlideModel, TextBlock, ImageBlock
 
@@ -28,6 +31,22 @@ def parse_markdown(text: str) -> List[SlideModel]:
             if p:
                 blocks.append(TextBlock(text=p))
         for img in soup.find_all("img"):
-            blocks.append(ImageBlock(src=img["src"], alt=img.get("alt", "")))
+            src = img["src"]
+            if src.startswith("http://") or src.startswith("https://"):
+                try:
+                    response = requests.get(src, timeout=10)
+                    response.raise_for_status()
+                    suffix = Path(src).suffix or ".img"
+                    tmp = NamedTemporaryFile(delete=False, suffix=suffix)
+                    tmp.write(response.content)
+                    tmp.flush()
+                    src = tmp.name
+                except Exception:
+                    # Skip image if it cannot be downloaded
+                    continue
+            elif not Path(src).exists():
+                # Skip invalid local paths
+                continue
+            blocks.append(ImageBlock(src=src, alt=img.get("alt", "")))
         slides.append(SlideModel(title=title, blocks=blocks))
     return slides
