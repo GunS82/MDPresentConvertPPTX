@@ -9,6 +9,9 @@ from .builder import build_presentation
 from .fetcher import fetch_markdown
 from .models import SlideModel, TextBlock, ImageBlock
 
+# Экспортируем версию для внешнего доступа
+version = __version__
+
 __all__ = [
     "parse_markdown",
     "build_presentation", 
@@ -16,4 +19,6 @@ __all__ = [
     "SlideModel",
     "TextBlock",
     "ImageBlock",
+    "__version__",
+    "version",
 ]
